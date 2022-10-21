@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 #include <pthread.h>
-#include <time.h>
 #define MAX_THREAD 3
 using namespace std;
 
@@ -23,16 +22,17 @@ struct datosRestaurante
         string nombre;
         int Salario;
         int trabajadores;
-        int ganancias[100]; // Arreglo de ganancias
-        int perdidas[100]; // Arreglo de perdidas
+        int ganancias[10000]; // Arreglo de ganancias
+        int perdidas[10000]; // Arreglo de perdidas
         int gananciasTotales = 0; 
         int perdidasTotales = 0;    
     };
  
     datosRestaurante *Restaurante = new datosRestaurante[3];
- 
+
 void *PedirRestaurante(void *arg)
 {
+                
         int thread_part = part++;
         pthread_mutex_lock(&mutex);
         cout << "Ingrese el nombre del restaurante #" << thread_part +1 <<":" << endl;
@@ -53,13 +53,12 @@ void *generarGananciasRandom(void *arg)
     int thread_part = gpart++;
     pthread_mutex_lock(&mutex);
     cout << "Obteniendo ganancias de la base de datos del restaurante: " << Restaurante[thread_part].nombre <<"..." << endl;
-    srand(time(0));
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10000; i++)
     {
         Restaurante[thread_part].ganancias[i] = rand() % 1000;
     }
     //Sumar todas las ganancias y guardar resultado en gananciasTotales{
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10000; i++)
     {
         Restaurante[thread_part].gananciasTotales += Restaurante[thread_part].ganancias[i];
     }
@@ -74,13 +73,13 @@ void *generarPerdidasRandom(void *arg)
     int thread_part = ppart++;
     pthread_mutex_lock(&mutex);
     cout << "Obteniendo perdidas de la base de datos del restaurante: " << Restaurante[thread_part].nombre <<"..." << endl;
-    srand(time(0));
-    for (int i = 0; i < 100; i++)
+
+    for (int i = 0; i < 10000; i++)
     {
-        Restaurante[thread_part].perdidas[i] = rand() % 1000;
+        Restaurante[thread_part].perdidas[i] = rand() % 300;
     }
     //Sumar todas las perdidas y guardar resultado en perdidasTotales
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10000; i++)
     {
         Restaurante[thread_part].perdidasTotales += Restaurante[thread_part].perdidas[i];
     }
@@ -93,7 +92,7 @@ int main()
 {
     pthread_t threads[MAX_THREAD];
     pthread_mutex_init(&mutex, NULL);
-
+    cout << "----------------------------------------\n Sistema de Contabilidad \n----------------------------------------\n"<<endl;
     for (int i = 0; i < MAX_THREAD; i++)
     {
         pthread_create(&threads[i], NULL, PedirRestaurante, (void *)NULL);
@@ -109,12 +108,13 @@ int main()
     pthread_mutex_destroy(&mutex);
 
     //Imprimir datos
+    cout << "----------------------------------------\nContabilidad de Restaurantes\n----------------------------------------\n" << endl;
     for (int i = 0; i < 3; i++)
     {
         cout << "Nombre del restaurante #" << i +1<<": "<< Restaurante[i].nombre << endl;
         cout << "Salario del trabajador #" << i +1<<": "<< Restaurante[i].Salario << endl;
         cout << "Numero de trabajadores #" << i +1 <<": " << Restaurante[i].trabajadores << endl;
-        cout << "\n" <<endl;
+        cout << "\n----------------------------------------\n" <<endl;
     }
 
 //ordenar los datos de mayor a menor "GANANCIAS"
@@ -134,12 +134,12 @@ int main()
 
 
 //imprimir Gananacias totales de cada restaurante de mayor a menor
-    cout << "El orden de restaurantes de mayor a menos en ganancias son: " << endl;
+    cout << "------------------------------------------------------------\nEl orden de restaurantes de mayor a menos en ganancias son: \n------------------------------------------------------------" << endl;
     for (int i = 0; i < 3; i++)
     {
         cout << "Nombre del restaurante #" << i +1<<": "<< Restaurante[i].nombre << endl;
         cout << "Ganancias totales del restaurante #" << i +1<<": "<< Restaurante[i].gananciasTotales << endl;
-        cout << "\n" <<endl;
+        cout << "\n----------------------------------------\n" <<endl;
     }
 
 //ordenar los datos de mayor a menor "PERDIDAS"
@@ -157,12 +157,12 @@ int main()
     }
 
 //imprimir Gananacias totales de cada restaurante de mayor a menor
-    cout << "El orden de restaurantes de mayor a menos en perdidas son: " << endl;
+    cout << "------------------------------------------------------------\nEl orden de restaurantes de mayor a menos en perdidas son: \n------------------------------------------------------------" << endl;
     for (int i = 0; i < 3; i++)
     {
         cout << "Nombre del restaurante #" << i +1<<": "<< Restaurante[i].nombre << endl;
         cout << "Perdidas totales del restaurante #" << i +1<<": "<< Restaurante[i].perdidasTotales << endl;
-        cout << "\n" <<endl;
+        cout << "\n----------------------------------------\n" <<endl;
     }
 
    
