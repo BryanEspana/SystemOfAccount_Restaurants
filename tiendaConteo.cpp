@@ -1,5 +1,5 @@
 /*
-* Laboratorio #5 - Adelanto de Proyecto #2
+* Proyecto #2
 * Bryan España - 21550
 * Javier Prado - 21486
 * Angel Perez - 21298
@@ -15,7 +15,7 @@ pthread_mutex_t mutex;
 int part = 0;
 int gpart = 0;
 int ppart = 0;
-
+int spart = 0;
 
 struct datosRestaurante
     {
@@ -25,7 +25,8 @@ struct datosRestaurante
         int ganancias[10000]; // Arreglo de ganancias
         int perdidas[10000]; // Arreglo de perdidas
         int gananciasTotales = 0; 
-        int perdidasTotales = 0;    
+        int perdidasTotales = 0;
+        int salarioTotal = 0;    
     };
  
     datosRestaurante *Restaurante = new datosRestaurante[3];
@@ -88,6 +89,18 @@ void *generarPerdidasRandom(void *arg)
     pthread_mutex_unlock(&mutex);
 }
 
+//Funcion para calcular el salario total de cada restaurante
+void *calcularSalario(void *arg)
+{
+    int thread_part = spart++;
+    pthread_mutex_lock(&mutex);
+    cout << "Calculando salario total del restaurante: " << Restaurante[thread_part].nombre <<"..." << endl;
+    Restaurante[thread_part].salarioTotal = Restaurante[thread_part].Salario * Restaurante[thread_part].trabajadores;
+    cout << "Se calculo con exito el salario total del restaurante " << Restaurante[thread_part].nombre << endl;
+    cout << "\n" << endl;
+    pthread_mutex_unlock(&mutex);
+}
+
 int main()
 {
     pthread_t threads[MAX_THREAD];
@@ -96,15 +109,15 @@ int main()
     for (int i = 0; i < MAX_THREAD; i++)
     {
         pthread_create(&threads[i], NULL, PedirRestaurante, (void *)NULL);
+        pthread_create(&threads[i], NULL, calcularSalario, (void *)NULL); 
         pthread_create(&threads[i], NULL, generarGananciasRandom, (void *)NULL);  
-        pthread_create(&threads[i], NULL, generarPerdidasRandom, (void *)NULL);  
+        pthread_create(&threads[i], NULL, generarPerdidasRandom, (void *)NULL); 
     }
 
     for (int i = 0; i < MAX_THREAD; i++)
     {
         pthread_join(threads[i], NULL);
     }
-
     pthread_mutex_destroy(&mutex);
 
     //Imprimir datos
@@ -132,9 +145,12 @@ int main()
     }
 
 
+    cout << "\n----------------------------------------\n" <<endl;
+    cout << "Analisis de contabilidad de restaurantes" << endl;
+    cout << "\n----------------------------------------\n" <<endl;
 
 //imprimir Gananacias totales de cada restaurante de mayor a menor
-    cout << "------------------------------------------------------------\nEl orden de restaurantes de mayor a menos en ganancias son: \n------------------------------------------------------------" << endl;
+    cout << "------------------------------------------------------------\nEl orden de restaurantes de mayor a menor en ganancias son: \n------------------------------------------------------------" << endl;
     for (int i = 0; i < 3; i++)
     {
         cout << "Nombre del restaurante #" << i +1<<": "<< Restaurante[i].nombre << endl;
@@ -156,8 +172,8 @@ int main()
         }
     }
 
-//imprimir Gananacias totales de cada restaurante de mayor a menor
-    cout << "------------------------------------------------------------\nEl orden de restaurantes de mayor a menos en perdidas son: \n------------------------------------------------------------" << endl;
+//imprimir perdidas totales de cada restaurante de mayor a menor
+    cout << "------------------------------------------------------------\nEl orden de restaurantes de mayor a menor en perdidas son: \n------------------------------------------------------------" << endl;
     for (int i = 0; i < 3; i++)
     {
         cout << "Nombre del restaurante #" << i +1<<": "<< Restaurante[i].nombre << endl;
@@ -165,7 +181,51 @@ int main()
         cout << "\n----------------------------------------\n" <<endl;
     }
 
-   
+//ordenar los datos de mayor a menor "SALARIO"
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = i + 1; j < 3; j++)
+        {
+            if (Restaurante[i].salarioTotal < Restaurante[j].salarioTotal)
+            {
+                datosRestaurante temp = Restaurante[i];
+                Restaurante[i] = Restaurante[j];
+                Restaurante[j] = temp;
+            }
+        }
+    }
+    //imprimir salario total de cada restaurante de mayor a menor
+    cout << "------------------------------------------------------------\nEl restaurante que gasta mas en salarios es: \n------------------------------------------------------------" << endl;
+    for (int i = 0; i < 3; i++)
+    {
+        cout << "Nombre del restaurante #" << i +1<<": "<< Restaurante[i].nombre << endl;
+        cout << "Restaurante que gasta en empleados #" << i +1<<": "<< Restaurante[i].salarioTotal << endl;
+        cout << "\n----------------------------------------\n" <<endl;
+    }
+
+   //Ordenar de mayor a menor el salario de cada empleado de cada restaurante
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = i + 1; j < 3; j++)
+        {
+            if (Restaurante[i].Salario < Restaurante[j].Salario)
+            {
+                datosRestaurante temp = Restaurante[i];
+                Restaurante[i] = Restaurante[j];
+                Restaurante[j] = temp;
+            }
+        }
+    }
+
+    //imprimir salario de cada empleado de cada restaurante de mayor a menor
+    cout << "------------------------------------------------------------\nEl orden de restaurante con mejor paga es: \n------------------------------------------------------------" << endl;
+    for (int i = 0; i < 3; i++)
+    {
+        cout << "Nombre del restaurante #" << i +1<<": "<< Restaurante[i].nombre << endl;
+        cout << "Salario del trabajador #" << i +1<<": "<< Restaurante[i].Salario << endl;
+        cout << "\n----------------------------------------\n" <<endl;
+    }
+
 
 
  
